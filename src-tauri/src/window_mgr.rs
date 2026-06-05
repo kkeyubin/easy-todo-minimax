@@ -33,7 +33,7 @@ impl WindowManager {
         .position(sticky.x as f64, sticky.y as f64)
         .resizable(true)
         .min_inner_size(180.0, 180.0)
-        .decorations(false)
+        .decorations(true)
         .visible(true)
         .skip_taskbar(false);
 

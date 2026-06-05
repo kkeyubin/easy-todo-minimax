@@ -1,10 +1,6 @@
+use tauri::State;
 use crate::models::{Sticky, StickyPatch, Todo, TodoPatch};
 use crate::AppState;
-use tauri::State;
-
-fn state_err<E: std::fmt::Display>(e: E) -> String {
-    format!("state lock failed: {}", e)
-}
 
 #[tauri::command]
 pub async fn list_stickies(state: State<'_, AppState>) -> Result<Vec<Sticky>, String> {
@@ -29,7 +25,6 @@ pub async fn create_sticky(
         let svc = state.service.lock().await;
         svc.create(sticky_type, x, y).await.map_err(|e| e.to_string())?
     };
-    // 创建完开窗
     let wm = state.window_mgr.lock().await;
     wm.open_sticky_window(&sticky).map_err(|e| e.to_string())?;
     Ok(sticky)
@@ -47,7 +42,6 @@ pub async fn update_sticky(
 
 #[tauri::command]
 pub async fn delete_sticky(state: State<'_, AppState>, id: i64) -> Result<(), String> {
-    // 先关窗
     {
         let wm = state.window_mgr.lock().await;
         wm.close_sticky_window(id);
@@ -89,11 +83,4 @@ pub async fn update_todo(
 pub async fn delete_todo(state: State<'_, AppState>, id: i64) -> Result<(), String> {
     let svc = state.service.lock().await;
     svc.delete_todo(id).await.map_err(|e| e.to_string())
-}
-
-// 静默未用警告
-#[allow(dead_code)]
-fn _unused(_: &State<'_, AppState>, _: &StickyPatch, _: &TodoPatch) -> Result<(), String> {
-    let _ = state_err;
-    Ok(())
 }

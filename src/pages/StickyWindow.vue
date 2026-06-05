@@ -6,6 +6,7 @@ import StickyToolbar from "../components/StickyToolbar.vue";
 import TextEditor from "../components/TextEditor.vue";
 import TodoEditor from "../components/TodoEditor.vue";
 import LinkEditor from "../components/LinkEditor.vue";
+import ImageEditor from "../components/ImageEditor.vue";
 import { useSticky } from "../composables/useSticky";
 
 const route = useRoute();
@@ -38,8 +39,12 @@ onMounted(load);
       v-model="content"
       :font-size="sticky.font_size"
     />
+    <ImageEditor
+      v-else-if="sticky.type === 'image'"
+      :sticky="sticky"
+    />
     <div v-else class="placeholder">
-      W4.2 待做：{{ sticky.type }} 便签
+      未知类型：{{ sticky.type }}
     </div>
     <template #toolbar>
       <StickyToolbar :sticky="sticky" />

@@ -70,6 +70,9 @@ pub fn run() {
             commands::delete_todo,
             commands::patch_window_state,
             commands::show_sticky,
+            commands::add_sticky_image,
+            commands::remove_sticky_image,
+            commands::get_app_data_dir,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

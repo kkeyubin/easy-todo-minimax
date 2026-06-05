@@ -68,6 +68,15 @@ export const ipc = {
   // W2.3: 显示/聚焦便签窗口（已开 → focus，未开 → 从 DB 重建）
   showSticky: (id: number) => invoke<void>("show_sticky", { id }),
 
+  // W4.2: 图片便签
+  addStickyImage: (id: number, srcPath: string) =>
+    invoke<string>("add_sticky_image", { id, srcPath }),
+  removeStickyImage: (id: number) =>
+    invoke<void>("remove_sticky_image", { id }),
+
+  // 拿 app_data_dir（用于图片 src 拼接）
+  appDataDir: () => invoke<string>("get_app_data_dir"),
+
   listTodos: (stickyId: number) => invoke<Todo[]>("list_todos", { stickyId }),
   addTodo: (stickyId: number, text: string) =>
     invoke<Todo>("add_todo", { stickyId, text }),

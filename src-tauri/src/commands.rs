@@ -1,6 +1,21 @@
+use std::path::PathBuf;
+
+use tauri::Manager;
 use tauri::State;
+use uuid::Uuid;
+
 use crate::models::{Sticky, StickyPatch, Todo, TodoPatch};
 use crate::AppState;
+
+fn images_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    let dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("images");
+    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    Ok(dir)
+}
 
 #[tauri::command]
 pub async fn list_stickies(state: State<'_, AppState>) -> Result<Vec<Sticky>, String> {
@@ -23,7 +38,9 @@ pub async fn create_sticky(
 ) -> Result<Sticky, String> {
     let sticky = {
         let svc = state.service.lock().await;
-        svc.create(sticky_type, x, y).await.map_err(|e| e.to_string())?
+        svc.create(sticky_type, x, y)
+            .await
+            .map_err(|e| e.to_string())?
     };
     let wm = state.window_mgr.lock().await;
     wm.open_sticky_window(&sticky).map_err(|e| e.to_string())?;
@@ -98,7 +115,7 @@ pub async fn patch_window_state(
     let svc = state.service.lock().await;
     svc.update(
         id,
-        crate::models::StickyPatch {
+        StickyPatch {
             x: Some(x),
             y: Some(y),
             width: Some(width),
@@ -110,12 +127,9 @@ pub async fn patch_window_state(
     .map_err(|e| e.to_string())
 }
 
-/// W2.3: 打开/聚焦一个便签窗口。
-/// - 窗口已开 → focus
-/// - 窗口被关（DB 还在）→ 从 DB 重建
+/// W2.3: 打开/聚焦一个便签窗口
 #[tauri::command]
 pub async fn show_sticky(state: State<'_, AppState>, id: i64) -> Result<(), String> {
-    // 先尝试 focus
     let needs_recreate = {
         let wm = state.window_mgr.lock().await;
         !wm.focus_sticky_window(id)
@@ -123,11 +137,96 @@ pub async fn show_sticky(state: State<'_, AppState>, id: i64) -> Result<(), Stri
     if !needs_recreate {
         return Ok(());
     }
-    // 重建
     let sticky = {
         let svc = state.service.lock().await;
         svc.get(id).await.map_err(|e| e.to_string())?
     };
     let wm = state.window_mgr.lock().await;
-    wm.open_sticky_window(&sticky).map_err(|e| e.to_string())
+    wm.open_sticky_window(&sticky)
+        .map_err(|e| e.to_string())
+}
+
+// ============ W4.2 图片便签 ============
+
+/// 从文件路径复制图片到 app_data_dir/images/，更新 sticky.image_path
+#[tauri::command]
+pub async fn add_sticky_image(
+    state: State<'_, AppState>,
+    id: i64,
+    src_path: String,
+) -> Result<String, String> {
+    let src = PathBuf::from(&src_path);
+    if !src.exists() {
+        return Err(format!("source file not found: {}", src_path));
+    }
+    let ext = src
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("png")
+        .to_lowercase();
+    let new_filename = format!("{}.{}", Uuid::new_v4(), ext);
+    let dir = images_dir(&state.app_handle)?;
+    let dest = dir.join(&new_filename);
+    std::fs::copy(&src, &dest).map_err(|e| format!("copy failed: {}", e))?;
+    let rel_path = format!("images/{}", new_filename);
+    state
+        .service
+        .lock()
+        .await
+        .update(
+            id,
+            StickyPatch {
+                image_path: Some(Some(rel_path.clone())),
+                ..Default::default()
+            },
+        )
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(rel_path)
+}
+
+/// 移除便签图片（清 DB 字段 + 删文件）
+#[tauri::command]
+pub async fn remove_sticky_image(
+    state: State<'_, AppState>,
+    id: i64,
+) -> Result<(), String> {
+    let image_path = {
+        let svc = state.service.lock().await;
+        svc.get(id).await.map_err(|e| e.to_string())?.image_path
+    };
+    state
+        .service
+        .lock()
+        .await
+        .update(
+            id,
+            StickyPatch {
+                image_path: Some(None),
+                ..Default::default()
+            },
+        )
+        .await
+        .map_err(|e| e.to_string())?;
+    if let Some(rel) = image_path {
+        let abs = state
+            .app_handle
+            .path()
+            .app_data_dir()
+            .map_err(|e| e.to_string())?
+            .join(&rel);
+        let _ = std::fs::remove_file(&abs);
+    }
+    Ok(())
+}
+
+/// W4.2: 暴露 app_data_dir 给前端
+#[tauri::command]
+pub fn get_app_data_dir(state: State<'_, AppState>) -> Result<String, String> {
+    state
+        .app_handle
+        .path()
+        .app_data_dir()
+        .map(|p| p.to_string_lossy().to_string())
+        .map_err(|e| e.to_string())
 }

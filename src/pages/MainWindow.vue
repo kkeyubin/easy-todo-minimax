@@ -106,7 +106,7 @@ function typeLabel(t: StickyType): string {
     </main>
 
     <footer class="main-window__footer">
-      <div class="main-window__new-group">
+      <div class="main-window__new-group main-window__new-group--4">
         <button class="main-window__new" @click="newSticky('text')">
           + 文本
         </button>
@@ -116,9 +116,12 @@ function typeLabel(t: StickyType): string {
         <button class="main-window__new main-window__new--link" @click="newSticky('link')">
           + 链接
         </button>
+        <button class="main-window__new main-window__new--image" @click="newSticky('image')">
+          + 图片
+        </button>
       </div>
       <p class="main-window__hint main-window__hint--footer">
-        W4.2 还会加图片便签
+        4 种便签类型齐了 ✅
       </p>
     </footer>
   </div>
@@ -279,6 +282,10 @@ function typeLabel(t: StickyType): string {
   display: flex;
   gap: 8px;
 }
+.main-window__new-group--4 .main-window__new {
+  padding: 10px 8px;
+  font-size: 13px;
+}
 .main-window__new {
   flex: 1;
   padding: 10px 16px;
@@ -302,6 +309,12 @@ function typeLabel(t: StickyType): string {
 }
 .main-window__new--link:hover {
   background: #059669;
+}
+.main-window__new--image {
+  background: #ec4899;
+}
+.main-window__new--image:hover {
+  background: #db2777;
 }
 .main-window__new:hover {
   background: #1d4ed8;

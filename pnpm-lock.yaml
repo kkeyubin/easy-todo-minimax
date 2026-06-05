@@ -34,13 +34,13 @@ importers:
         version: 4.6.4(vue@3.5.35(typescript@5.9.3))
     devDependencies:
       '@tauri-apps/cli':
-        specifier: ^2.1.0
+        specifier: '@tauri-apps/[email protected]'
         version: 2.11.2
       '@types/markdown-it':
-        specifier: ^14.1.2
+        specifier: '@tauri-apps/[email protected]'
         version: 14.1.2
       '@vitejs/plugin-vue':
-        specifier: ^5.2.1
+        specifier: '@tauri-apps/[email protected]'
         version: 5.2.4(vite@6.4.3)(vue@3.5.35(typescript@5.9.3))
       typescript:
         specifier: ^5.7.2

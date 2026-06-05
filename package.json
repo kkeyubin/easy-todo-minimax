@@ -23,9 +23,9 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.1.0",
-    "@types/markdown-it": "^14.1.2",
-    "@vitejs/plugin-vue": "^5.2.1",
+    "@tauri-apps/cli": "@tauri-apps/[email protected]",
+    "@types/markdown-it": "@tauri-apps/[email protected]",
+    "@vitejs/plugin-vue": "@tauri-apps/[email protected]",
     "typescript": "^5.7.2",
     "vite": "^6.0.3",
     "vue-tsc": "^2.1.10"

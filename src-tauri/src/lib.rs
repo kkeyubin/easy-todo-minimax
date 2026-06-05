@@ -29,7 +29,16 @@ pub fn run() {
             let service = StickiesService::new(storage);
             let window_mgr = WindowManager::new(app_handle.clone());
 
-            let stickies = service.list_sync()?;
+            // 首次启动如果 DB 空，自动创建一个空便签作为引导
+            let mut stickies = service.list_sync()?;
+            if stickies.is_empty() {
+                log::info!("empty db, seeding first sticky note");
+                let first = service
+                    .create_sync("text".to_string(), 200, 200)
+                    .map_err(|e| anyhow::anyhow!(e.to_string()))?;
+                stickies.push(first);
+            }
+
             log::info!("reopening {} sticky windows", stickies.len());
             for sticky in &stickies {
                 if let Err(e) = window_mgr.open_sticky_window(sticky) {

@@ -18,6 +18,10 @@ impl StickiesService {
         tauri::async_runtime::block_on(async { self.list().await })
     }
 
+    pub fn create_sync(&self, sticky_type: String, x: i32, y: i32) -> Result<Sticky> {
+        tauri::async_runtime::block_on(async { self.create(sticky_type, x, y).await })
+    }
+
     pub async fn list(&self) -> Result<Vec<Sticky>> {
         let rows = sqlx::query_as::<_, StickyRow>(
             "SELECT id, type AS sticky_type, title, color, x, y, width, height, \

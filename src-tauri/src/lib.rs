@@ -10,6 +10,7 @@ mod commands;
 mod models;
 mod service;
 mod storage;
+mod tray;
 mod window_mgr;
 
 pub struct AppState {
@@ -23,7 +24,6 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
             let app_handle = app.handle().clone();
 
@@ -33,16 +33,8 @@ pub fn run() {
             let service = StickiesService::new(storage);
             let window_mgr = WindowManager::new(app_handle.clone());
 
-            // 首次启动如果 DB 空，自动创建一个空便签作为引导
-            let mut stickies = service.list_sync()?;
-            if stickies.is_empty() {
-                log::info!("empty db, seeding first sticky note");
-                let first = service
-                    .create_sync("text".to_string(), 200, 200)
-                    .map_err(|e| anyhow::anyhow!(e.to_string()))?;
-                stickies.push(first);
-            }
-
+            // 启动恢复：从 DB 读所有便签，重新开窗
+            let stickies = service.list_sync()?;
             log::info!("reopening {} sticky windows", stickies.len());
             for sticky in &stickies {
                 if let Err(e) = window_mgr.open_sticky_window(sticky) {
@@ -55,6 +47,11 @@ pub fn run() {
                 window_mgr: tokio::sync::Mutex::new(window_mgr),
                 app_handle: app_handle.clone(),
             });
+
+            // 5. 装菜单栏 tray
+            if let Err(e) = tray::setup_tray(&app_handle) {
+                log::error!("tray setup failed: {}", e);
+            }
 
             Ok(())
         })

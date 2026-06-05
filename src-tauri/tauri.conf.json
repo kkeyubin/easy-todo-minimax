@@ -11,20 +11,6 @@
   },
   "app": {
     "macOSPrivateApi": true,
-    "windows": [
-      {
-        "label": "main",
-        "title": "Easy Sticky",
-        "width": 800,
-        "height": 600,
-        "minWidth": 200,
-        "minHeight": 200,
-        "resizable": true,
-        "fullscreen": false,
-        "visible": true,
-        "decorations": true
-      }
-    ],
     "security": {
       "csp": null
     }

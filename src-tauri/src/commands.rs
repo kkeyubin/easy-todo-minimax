@@ -36,9 +36,27 @@ pub async fn create_sticky(
     x: i32,
     y: i32,
 ) -> Result<Sticky, String> {
+    // x == -1 表示 "auto cascade"：基于最后一个便签 +30,+30 计算位置
+    let (cx, cy) = if x < 0 || y < 0 {
+        let last = {
+            let svc = state.service.lock().await;
+            svc.list().await.map_err(|e| e.to_string())?
+        };
+        match last.first() {
+            Some(s) => {
+                let nx = s.x + 30;
+                let ny = s.y + 30;
+                if nx > 1000 || ny > 800 { (200, 200) } else { (nx, ny) }
+            }
+            None => (200, 200),
+        }
+    } else {
+        (x, y)
+    };
+
     let sticky = {
         let svc = state.service.lock().await;
-        svc.create(sticky_type, x, y)
+        svc.create(sticky_type, cx, cy)
             .await
             .map_err(|e| e.to_string())?
     };

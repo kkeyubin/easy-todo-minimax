@@ -3,7 +3,7 @@ import { computed, ref, onMounted, onUnmounted } from "vue";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import StickyColorPicker from "./StickyColorPicker.vue";
 import { getColor, FONT_SIZES } from "../types/sticky";
-import { ipc, type Sticky } from "../ipc";
+import { ipc, type Sticky, type StickyType } from "../ipc";
 
 const props = defineProps<{
   sticky: Sticky;
@@ -45,6 +45,15 @@ async function onDelete() {
   // 后端 delete_sticky 会关窗，前端无需再操作
 }
 
+// 新建另一种类型的便签（在 cascade 位置）
+async function newSticky(type: StickyType) {
+  try {
+    await ipc.create(type, -1, -1); // x=-1 让后端按 cascade 算法算位置
+  } catch (e) {
+    console.error("[toolbar] create sticky failed", e);
+  }
+}
+
 // 点 picker 外部关闭
 function onDocClick(e: MouseEvent) {
   if (!colorOpen.value) return;
@@ -62,7 +71,7 @@ onUnmounted(() => document.removeEventListener("mousedown", onDocClick));
     <div class="toolbar__group" ref="colorPicker">
       <button
         class="toolbar__btn toolbar__btn--color"
-        :title="`当前颜色：${sticky.color}（点击换色）`"
+        :title="`颜色：${sticky.color}（点击换色）`"
         @click="colorOpen = !colorOpen"
       >
         <span
@@ -83,7 +92,7 @@ onUnmounted(() => document.removeEventListener("mousedown", onDocClick));
     <div class="toolbar__sep" />
 
     <!-- 字号 -->
-    <div class="toolbar__group">
+    <div class="toolbar__group toolbar__group--font">
       <button
         class="toolbar__btn toolbar__btn--font"
         :disabled="sticky.font_size <= FONT_SIZES[0]"
@@ -100,6 +109,36 @@ onUnmounted(() => document.removeEventListener("mousedown", onDocClick));
     </div>
 
     <div class="toolbar__sep" />
+
+    <!-- 新建其他类型便签 -->
+    <div class="toolbar__group toolbar__group--new">
+      <button
+        class="toolbar__btn toolbar__btn--new"
+        :class="{ 'toolbar__btn--active': sticky.type === 'text' }"
+        title="新建文本便签"
+        @click="newSticky('text')"
+      ><span class="toolbar__plus">+</span><span class="toolbar__icon">T</span></button>
+      <button
+        class="toolbar__btn toolbar__btn--new"
+        :class="{ 'toolbar__btn--active': sticky.type === 'todo' }"
+        title="新建待办便签"
+        @click="newSticky('todo')"
+      ><span class="toolbar__plus">+</span><span class="toolbar__icon toolbar__icon--box"></span></button>
+      <button
+        class="toolbar__btn toolbar__btn--new"
+        :class="{ 'toolbar__btn--active': sticky.type === 'link' }"
+        title="新建链接便签"
+        @click="newSticky('link')"
+      ><span class="toolbar__plus">+</span><span class="toolbar__icon">↗</span></button>
+      <button
+        class="toolbar__btn toolbar__btn--new"
+        :class="{ 'toolbar__btn--active': sticky.type === 'image' }"
+        title="新建图片便签"
+        @click="newSticky('image')"
+      ><span class="toolbar__plus">+</span><span class="toolbar__icon">▢</span></button>
+    </div>
+
+    <div class="toolbar__spacer" />
 
     <!-- 置顶 -->
     <button
@@ -123,8 +162,6 @@ onUnmounted(() => document.removeEventListener("mousedown", onDocClick));
       </svg>
     </button>
 
-    <div class="toolbar__spacer" />
-
     <!-- 删除 -->
     <button
       class="toolbar__btn toolbar__btn--danger"
@@ -146,9 +183,9 @@ onUnmounted(() => document.removeEventListener("mousedown", onDocClick));
   flex: 0 0 32px;
   display: flex;
   align-items: center;
-  padding: 0 8px;
+  padding: 0 6px;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
-  gap: 4px;
+  gap: 2px;
   position: relative;
   user-select: none;
 }
@@ -164,11 +201,12 @@ onUnmounted(() => document.removeEventListener("mousedown", onDocClick));
   width: 1px;
   height: 16px;
   background: rgba(0, 0, 0, 0.1);
-  margin: 0 4px;
+  margin: 0 2px;
 }
 
 .toolbar__spacer {
   flex: 1;
+  min-width: 4px;
 }
 
 .toolbar__btn {
@@ -187,6 +225,7 @@ onUnmounted(() => document.removeEventListener("mousedown", onDocClick));
   padding: 0;
   opacity: 0.7;
   transition: background 0.1s, opacity 0.1s;
+  position: relative;
 }
 .toolbar__btn:hover:not(:disabled) {
   background: rgba(0, 0, 0, 0.08);
@@ -212,8 +251,8 @@ onUnmounted(() => document.removeEventListener("mousedown", onDocClick));
   border: 1px solid;
 }
 
-.toolbar__btn--font {
-  width: 22px;
+.toolbar__group--font .toolbar__btn--font {
+  width: 20px;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: -0.5px;
@@ -222,8 +261,39 @@ onUnmounted(() => document.removeEventListener("mousedown", onDocClick));
   font-size: 10px;
   font-weight: 500;
   opacity: 0.6;
-  min-width: 18px;
+  min-width: 16px;
   text-align: center;
+}
+
+/* +类型按钮：左上 + 加号 + 右侧小图标 */
+.toolbar__btn--new {
+  width: 26px;
+  font-size: 0;
+  position: relative;
+}
+.toolbar__plus {
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.6;
+}
+.toolbar__icon {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  margin-left: 4px;
+}
+.toolbar__icon--box {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid currentColor;
+  border-radius: 1px;
+  vertical-align: middle;
+  margin-bottom: 1px;
 }
 
 .toolbar__btn--danger:hover {

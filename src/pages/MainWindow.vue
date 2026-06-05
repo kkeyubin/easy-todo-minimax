@@ -113,9 +113,12 @@ function typeLabel(t: StickyType): string {
         <button class="main-window__new main-window__new--todo" @click="newSticky('todo')">
           + 待办
         </button>
+        <button class="main-window__new main-window__new--link" @click="newSticky('link')">
+          + 链接
+        </button>
       </div>
       <p class="main-window__hint main-window__hint--footer">
-        W4 还会加链接 / 图片便签
+        W4.2 还会加图片便签
       </p>
     </footer>
   </div>
@@ -293,6 +296,12 @@ function typeLabel(t: StickyType): string {
 }
 .main-window__new--todo:hover {
   background: #d97706;
+}
+.main-window__new--link {
+  background: #10b981;
+}
+.main-window__new--link:hover {
+  background: #059669;
 }
 .main-window__new:hover {
   background: #1d4ed8;

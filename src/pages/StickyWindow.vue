@@ -5,6 +5,7 @@ import StickyCard from "../components/StickyCard.vue";
 import StickyToolbar from "../components/StickyToolbar.vue";
 import TextEditor from "../components/TextEditor.vue";
 import TodoEditor from "../components/TodoEditor.vue";
+import LinkEditor from "../components/LinkEditor.vue";
 import { useSticky } from "../composables/useSticky";
 
 const route = useRoute();
@@ -32,8 +33,13 @@ onMounted(load);
       v-else-if="sticky.type === 'todo'"
       :sticky-id="sticky.id"
     />
+    <LinkEditor
+      v-else-if="sticky.type === 'link'"
+      v-model="content"
+      :font-size="sticky.font_size"
+    />
     <div v-else class="placeholder">
-      W4 待做：{{ sticky.type }} 便签
+      W4.2 待做：{{ sticky.type }} 便签
     </div>
     <template #toolbar>
       <StickyToolbar :sticky="sticky" />

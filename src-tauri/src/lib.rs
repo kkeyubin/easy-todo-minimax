@@ -13,13 +13,17 @@ mod storage;
 mod window_mgr;
 
 pub struct AppState {
-    pub service: tokio::sync::Mutex<crate::service::StickiesService>,
-    pub window_mgr: tokio::sync::Mutex<crate::window_mgr::WindowManager>,
+    pub service: tokio::sync::Mutex<StickiesService>,
+    pub window_mgr: tokio::sync::Mutex<WindowManager>,
+    pub app_handle: tauri::AppHandle,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
             let app_handle = app.handle().clone();
 
@@ -49,6 +53,7 @@ pub fn run() {
             app.manage(AppState {
                 service: tokio::sync::Mutex::new(service),
                 window_mgr: tokio::sync::Mutex::new(window_mgr),
+                app_handle: app_handle.clone(),
             });
 
             Ok(())

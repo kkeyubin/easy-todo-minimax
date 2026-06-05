@@ -106,11 +106,16 @@ function typeLabel(t: StickyType): string {
     </main>
 
     <footer class="main-window__footer">
-      <button class="main-window__new" @click="newSticky('text')">
-        + 新建文本便签
-      </button>
+      <div class="main-window__new-group">
+        <button class="main-window__new" @click="newSticky('text')">
+          + 文本
+        </button>
+        <button class="main-window__new main-window__new--todo" @click="newSticky('todo')">
+          + 待办
+        </button>
+      </div>
       <p class="main-window__hint main-window__hint--footer">
-        W3/W4 会陆续加待办 / 链接 / 图片
+        W4 还会加链接 / 图片便签
       </p>
     </footer>
   </div>
@@ -267,8 +272,12 @@ function typeLabel(t: StickyType): string {
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   background: #fff;
 }
+.main-window__new-group {
+  display: flex;
+  gap: 8px;
+}
 .main-window__new {
-  width: 100%;
+  flex: 1;
   padding: 10px 16px;
   font-size: 14px;
   font-weight: 500;
@@ -278,6 +287,12 @@ function typeLabel(t: StickyType): string {
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.1s;
+}
+.main-window__new--todo {
+  background: #f59e0b;
+}
+.main-window__new--todo:hover {
+  background: #d97706;
 }
 .main-window__new:hover {
   background: #1d4ed8;

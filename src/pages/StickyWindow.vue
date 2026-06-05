@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 import StickyCard from "../components/StickyCard.vue";
 import StickyToolbar from "../components/StickyToolbar.vue";
 import TextEditor from "../components/TextEditor.vue";
+import TodoEditor from "../components/TodoEditor.vue";
 import { useSticky } from "../composables/useSticky";
 
 const route = useRoute();
@@ -22,7 +23,18 @@ onMounted(load);
 
 <template>
   <StickyCard v-if="ready && sticky" :sticky="sticky">
-    <TextEditor v-model="content" :font-size="sticky.font_size" />
+    <TextEditor
+      v-if="sticky.type === 'text'"
+      v-model="content"
+      :font-size="sticky.font_size"
+    />
+    <TodoEditor
+      v-else-if="sticky.type === 'todo'"
+      :sticky-id="sticky.id"
+    />
+    <div v-else class="placeholder">
+      W4 待做：{{ sticky.type }} 便签
+    </div>
     <template #toolbar>
       <StickyToolbar :sticky="sticky" />
     </template>
@@ -31,9 +43,10 @@ onMounted(load);
 </template>
 
 <style scoped>
-.loading {
-  width: 100vw;
-  height: 100vh;
+.loading,
+.placeholder {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;

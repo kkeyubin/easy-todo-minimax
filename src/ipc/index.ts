@@ -65,6 +65,9 @@ export const ipc = {
   ) =>
     invoke<void>("patch_window_state", { id, x, y, width, height }),
 
+  // W2.3: 显示/聚焦便签窗口（已开 → focus，未开 → 从 DB 重建）
+  showSticky: (id: number) => invoke<void>("show_sticky", { id }),
+
   listTodos: (stickyId: number) => invoke<Todo[]>("list_todos", { stickyId }),
   addTodo: (stickyId: number, text: string) =>
     invoke<Todo>("add_todo", { stickyId, text }),

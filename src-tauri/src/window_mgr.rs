@@ -55,4 +55,18 @@ impl WindowManager {
             let _ = window.close();
         }
     }
+
+    /// 已开窗 → focus；未开窗 → 返回 false（调用方从 DB 重建）
+    pub fn focus_sticky_window(&self, sticky_id: i64) -> bool {
+        let label = format!("sticky-{}", sticky_id);
+        match self.app.get_webview_window(&label) {
+            Some(window) => {
+                let _ = window.unminimize();
+                let _ = window.show();
+                let _ = window.set_focus();
+                true
+            }
+            None => false,
+        }
+    }
 }

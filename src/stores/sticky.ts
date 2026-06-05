@@ -2,8 +2,9 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import { ipc, type Sticky, type StickyType } from "../ipc";
 
-// W1 阶段 store 主要是给 W2+ 的便签列表 / 全局操作打基础。
-// 启动恢复是主进程 WindowManager 负责的，不在 store 里重复。
+/**
+ * W2.3: 便签全局 store（main 窗口的列表管理用，便签窗口不依赖这个）
+ */
 export const useStickyStore = defineStore("sticky", () => {
   const stickies = ref<Sticky[]>([]);
   const loading = ref(false);
@@ -19,7 +20,7 @@ export const useStickyStore = defineStore("sticky", () => {
 
   async function create(type: StickyType, x: number, y: number) {
     const s = await ipc.create(type, x, y);
-    stickies.value.push(s);
+    stickies.value.unshift(s);
     return s;
   }
 
@@ -28,5 +29,9 @@ export const useStickyStore = defineStore("sticky", () => {
     stickies.value = stickies.value.filter((s) => s.id !== id);
   }
 
-  return { stickies, loading, load, create, remove };
+  async function show(id: number) {
+    await ipc.showSticky(id);
+  }
+
+  return { stickies, loading, load, create, remove, show };
 });

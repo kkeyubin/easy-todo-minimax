@@ -109,3 +109,25 @@ pub async fn patch_window_state(
     .await
     .map_err(|e| e.to_string())
 }
+
+/// W2.3: 打开/聚焦一个便签窗口。
+/// - 窗口已开 → focus
+/// - 窗口被关（DB 还在）→ 从 DB 重建
+#[tauri::command]
+pub async fn show_sticky(state: State<'_, AppState>, id: i64) -> Result<(), String> {
+    // 先尝试 focus
+    let needs_recreate = {
+        let wm = state.window_mgr.lock().await;
+        !wm.focus_sticky_window(id)
+    };
+    if !needs_recreate {
+        return Ok(());
+    }
+    // 重建
+    let sticky = {
+        let svc = state.service.lock().await;
+        svc.get(id).await.map_err(|e| e.to_string())?
+    };
+    let wm = state.window_mgr.lock().await;
+    wm.open_sticky_window(&sticky).map_err(|e| e.to_string())
+}

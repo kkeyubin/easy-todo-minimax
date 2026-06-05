@@ -58,6 +58,9 @@ function onTitleKeydown(e: KeyboardEvent) {
       <slot />
     </main>
 
+    <!-- 底部 toolbar slot（可选） -->
+    <slot name="toolbar" />
+
     <!-- 8 向 resize 手柄 -->
     <div class="sticky-card__resize sticky-card__resize--n"  @mousedown="onResizeStart('n')"></div>
     <div class="sticky-card__resize sticky-card__resize--s"  @mousedown="onResizeStart('s')"></div>

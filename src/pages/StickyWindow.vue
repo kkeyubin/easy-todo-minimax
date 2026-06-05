@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import StickyCard from "../components/StickyCard.vue";
+import StickyToolbar from "../components/StickyToolbar.vue";
 import TextEditor from "../components/TextEditor.vue";
 import { useSticky } from "../composables/useSticky";
-import { ipc, type Sticky } from "../ipc";
 
 const route = useRoute();
 const id = computed(() => Number(route.params.id));
@@ -23,6 +23,9 @@ onMounted(load);
 <template>
   <StickyCard v-if="ready && sticky" :sticky="sticky">
     <TextEditor v-model="content" :font-size="sticky.font_size" />
+    <template #toolbar>
+      <StickyToolbar :sticky="sticky" />
+    </template>
   </StickyCard>
   <div v-else class="loading">加载中…</div>
 </template>

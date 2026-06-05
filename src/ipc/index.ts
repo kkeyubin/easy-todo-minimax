@@ -55,6 +55,16 @@ export const ipc = {
     invoke<void>("update_sticky", { id, patch }),
   delete: (id: number) => invoke<void>("delete_sticky", { id }),
 
+  // 窗口几何同步：resize/拖动时前端防抖调用
+  patchWindowState: (
+    id: number,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ) =>
+    invoke<void>("patch_window_state", { id, x, y, width, height }),
+
   listTodos: (stickyId: number) => invoke<Todo[]>("list_todos", { stickyId }),
   addTodo: (stickyId: number, text: string) =>
     invoke<Todo>("add_todo", { stickyId, text }),

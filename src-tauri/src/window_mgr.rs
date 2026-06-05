@@ -33,7 +33,9 @@ impl WindowManager {
         .position(sticky.x as f64, sticky.y as f64)
         .resizable(true)
         .min_inner_size(180.0, 180.0)
-        .decorations(true)
+        .decorations(false) // W2: 自绘圆角无边框
+        .transparent(true)  // macOS private API：让圆角 + 阴影正确显示
+        .shadow(true)       // 系统级窗口阴影
         .visible(true)
         .skip_taskbar(false);
 

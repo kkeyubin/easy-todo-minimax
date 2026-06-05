@@ -63,6 +63,7 @@ pub fn run() {
             commands::add_todo,
             commands::update_todo,
             commands::delete_todo,
+            commands::patch_window_state,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

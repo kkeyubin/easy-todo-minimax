@@ -84,3 +84,28 @@ pub async fn delete_todo(state: State<'_, AppState>, id: i64) -> Result<(), Stri
     let svc = state.service.lock().await;
     svc.delete_todo(id).await.map_err(|e| e.to_string())
 }
+
+/// 窗口位置/大小变化时由前端调用（debounce 后），用于持久化窗口几何
+#[tauri::command]
+pub async fn patch_window_state(
+    state: State<'_, AppState>,
+    id: i64,
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
+) -> Result<(), String> {
+    let svc = state.service.lock().await;
+    svc.update(
+        id,
+        crate::models::StickyPatch {
+            x: Some(x),
+            y: Some(y),
+            width: Some(width),
+            height: Some(height),
+            ..Default::default()
+        },
+    )
+    .await
+    .map_err(|e| e.to_string())
+}

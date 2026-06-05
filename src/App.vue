@@ -20,5 +20,11 @@ html, body, #app {
   color: #222;
   background: transparent;
   user-select: none;
+  overflow: hidden;
+}
+
+/* 便签窗口需要 html/body 完全透明，让窗口圆角 + 阴影露出 */
+body {
+  background: transparent !important;
 }
 </style>

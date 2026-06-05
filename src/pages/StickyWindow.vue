@@ -1,55 +1,40 @@
-<template>
-  <div class="sticky-window">
-    <header class="sticky-window__title" data-tauri-drag-region>
-      <span class="sticky-window__label">Sticky #{{ id }}</span>
-    </header>
-    <main class="sticky-window__body">
-      <p>W1 骨架：便签已加载，待 W2 接入自绘 / 编辑 / 颜色 / 置顶。</p>
-      <p v-if="sticky">type: {{ sticky.type }} · color: {{ sticky.color }} · {{ sticky.width }}×{{ sticky.height }}</p>
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
+import StickyCard from "../components/StickyCard.vue";
+import TextEditor from "../components/TextEditor.vue";
+import { useSticky } from "../composables/useSticky";
 import { ipc, type Sticky } from "../ipc";
 
 const route = useRoute();
-const id = Number(route.params.id);
-const sticky = ref<Sticky | null>(null);
+const id = computed(() => Number(route.params.id));
 
-onMounted(async () => {
-  try {
-    sticky.value = await ipc.get(id);
-  } catch (e) {
-    console.error("get sticky failed", e);
-  }
+const { sticky, ready, load } = useSticky(id);
+const content = computed({
+  get: () => sticky.value?.content ?? "",
+  set: (v: string) => {
+    if (sticky.value) sticky.value.content = v;
+  },
 });
+
+onMounted(load);
 </script>
 
-<style>
-.sticky-window {
+<template>
+  <StickyCard v-if="ready && sticky" :sticky="sticky">
+    <TextEditor v-model="content" :font-size="sticky.font_size" />
+  </StickyCard>
+  <div v-else class="loading">加载中…</div>
+</template>
+
+<style scoped>
+.loading {
+  width: 100vw;
   height: 100vh;
   display: flex;
-  flex-direction: column;
-}
-.sticky-window__title {
-  height: 32px;
-  display: flex;
   align-items: center;
-  padding: 0 12px;
-  background: rgba(0, 0, 0, 0.04);
-  font-size: 12px;
-  color: #555;
-  cursor: grab;
-}
-.sticky-window__title:active {
-  cursor: grabbing;
-}
-.sticky-window__body {
-  flex: 1;
-  padding: 12px;
-  overflow: auto;
+  justify-content: center;
+  font-size: 13px;
+  color: #888;
 }
 </style>
